@@ -1,7 +1,7 @@
 #include <Arduino.h>
-#include <Wire.h>  // for I2c
-#include "PCF8574.h"
-#include <generalFunc.h>
+//#include <Wire.h>  // for I2c
+//#include "PCF8574.h"
+//#include <generalFunc.h>
 //#include <i2c.h>
 #include <Motors.h>
 #include <headers.h>
