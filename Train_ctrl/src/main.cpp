@@ -1,16 +1,18 @@
 #include <Arduino.h>
 //#include <Wire.h>  // for I2c
 //#include "PCF8574.h"
-//#include <generalFunc.h>
+#include <generalFunc.h>
 //#include <i2c.h>
 #include <Motors.h>
 #include <headers.h>
 
 // 2 June 2023: moving from PCB Yuval Train (#8) to Train_CTRL (#6)
-
-#define red_led_pin 15
-#define yellow_led_pin 2
-#define green_led_pin 16 // in pcb1 was 12
+#define LED1 34
+#define LED2 35
+#define LED3 13
+#define red_led_pin LED1
+#define yellow_led_pin LED2
+#define green_led_pin LED3
 //#define buzzer_pin 25
 #define m1_en_pin 22 // was 22 in layout pcb2, 13 for testing
 #define m1_in1_pin 23
@@ -172,7 +174,7 @@ if( start_val==LOW || stop_val==LOW || cng_val==LOW) {
 
 void setup() {
   Serial.begin(9600);
-  Wire.begin(); // init I2C bus as a master 
+  //Wire.begin(); // init I2C bus as a master 
   Serial.println("..starting SETUP....");
   Serial.println(xPortGetCoreID());
       

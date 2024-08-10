@@ -1,7 +1,7 @@
 //#include <esp_now.h>
 //#include <WiFi.h>
-#include <OneWire.h> // for the temp sensor (one wire bus)
-#include <DallasTemperature.h>
+//#include <OneWire.h> // for the temp sensor (one wire bus)
+//#include <DallasTemperature.h>
 
 // Motors constants
 //#define START_SPEED 200
