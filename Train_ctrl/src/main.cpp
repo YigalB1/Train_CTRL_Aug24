@@ -6,10 +6,14 @@
 #include <Motors.h>
 #include <headers.h>
 
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+
 // 2 June 2023: moving from PCB Yuval Train (#8) to Train_CTRL (#6)
-#define LED1 34
-#define LED2 35
-#define LED3 13
+#define LED1 25 // was 34  XXX wrong design.. input only
+#define LED2 26 // was 35  XXX wrong design.. input only
+#define LED3 27 // was13
 #define red_led_pin LED1
 #define yellow_led_pin LED2
 #define green_led_pin LED3
@@ -21,6 +25,11 @@
 #define button_stop_pin   36 // was 36, then 17 
 #define button_cng_dir_pin 34
 #define speed_potsmtr_pin   33 //  26  //39 // was  33
+#define ONE_WIRE_BUS  32 // for temperature sensor
+
+OneWire oneWire(ONE_WIRE_BUS); // for temperature sensor
+DallasTemperature sensors(&oneWire);
+
 
 //#define I2C_interrupt_pin 13
 
@@ -177,6 +186,16 @@ void setup() {
   //Wire.begin(); // init I2C bus as a master 
   Serial.println("..starting SETUP....");
   Serial.println(xPortGetCoreID());
+
+  sensors.begin();
+  while(true) {
+    sensors.requestTemperatures(); 
+    Serial.print("Celsius temperature: ");
+  // "byIndex" incase more ICs on the onewire bus. 0 refers to the first IC on the wire
+  Serial.print(sensors.getTempCByIndex(0)); 
+  delay(250);
+
+  } // while loop 
       
   my_train.Red_led.led_pin = red_led_pin;
   my_train.Yellow_led.led_pin = yellow_led_pin;
@@ -201,7 +220,24 @@ void setup() {
   my_train.Green_led.set_led_on();
   my_train.Yellow_led.set_led_on();
 
+  
+
   wait_millis(1000);
+
+  // debug 
+  while( true ) {
+    my_train.Red_led.set_led_on(); 
+    my_train.Green_led.set_led_on();
+    my_train.Yellow_led.set_led_on();
+
+    wait_millis(1000);
+    my_train.Red_led.set_led_off(); 
+    my_train.Green_led.set_led_off();
+    my_train.Yellow_led.set_led_off();
+
+    wait_millis(1000);
+    Serial.println(".. working ... ");
+  } // end of debug endless 
 
   //my_train.buzz._buz_pin = buzzer_pin;
   //my_train.buzz.init_buzzer();
