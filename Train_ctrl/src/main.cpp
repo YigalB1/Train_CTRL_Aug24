@@ -4,10 +4,19 @@
 #include <generalFunc.h>
 //#include <i2c.h>
 #include <Motors.h>
+
+
+//#define one_wire_bus 32
+
+//#define ONE_WIRE_BUS  32 // for temperature sensor
+
 #include <headers.h>
 
-#include <OneWire.h>
-#include <DallasTemperature.h>
+
+
+//OneWire oneWire(ONE_WIRE_BUS); // for temperature sensor
+//DallasTemperature sensors(&oneWire);
+
 
 
 // 2 June 2023: moving from PCB Yuval Train (#8) to Train_CTRL (#6)
@@ -21,14 +30,13 @@
 #define m1_en_pin 22 // was 22 in layout pcb2, 13 for testing
 #define m1_in1_pin 23
 #define m1_in2_pin 4
-#define button_start_pin   35
-#define button_stop_pin   36 // was 36, then 17 
-#define button_cng_dir_pin 34
+#define button_start_pin   18 //35
+#define button_stop_pin   5 // 36 // was 36, then 17 
+#define button_cng_dir_pin 17 // 34
 #define speed_potsmtr_pin   33 //  26  //39 // was  33
-#define ONE_WIRE_BUS  32 // for temperature sensor
 
-OneWire oneWire(ONE_WIRE_BUS); // for temperature sensor
-DallasTemperature sensors(&oneWire);
+
+
 
 
 //#define I2C_interrupt_pin 13
@@ -49,6 +57,15 @@ volatile bool stop_pressed = false;
 volatile bool cng_pressed = false;
 int num_start_pressed = 0;
 int num_end_pressed = 0;
+
+// ESP32 has 2 cores. Core 0 (the include below) handles the switch buttons.
+// core 1 runs all other tasks
+//#include <switch_handler.c>
+
+
+
+// xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+
 
  void IRAM_ATTR Button_start_isr() {
   detachInterrupt(button_start_pin);
@@ -93,7 +110,7 @@ void Task1code( void * parameter) {
    
     // Check START button value
     if (start_val==LOW) {
-      //Serial.println("  in START_VAL ");
+      Serial.println("  in START_VAL ");
       
       // START was pressed. if train was on the go, ignore. Otherwise - start the train
       if (my_train.motor.status == STOP) {
@@ -114,7 +131,7 @@ void Task1code( void * parameter) {
 
 
     if (cng_val==LOW) {
-      //Serial.println("  in CNG_VAL ");
+      Serial.println("  in CNG_VAL ");
       // CHANGE DIR  was pressed. 
       if (my_train.motor.status == STOP) {
         // Motor remains stop, just change direction
@@ -147,7 +164,7 @@ void Task1code( void * parameter) {
     } // outer if cng_val
 
     if (stop_val==LOW) {
-      //Serial.print("  in STOP_VAL ");
+      Serial.print("  in STOP_VAL ");
       // STOP was pressed.
       my_train.motor.stop();
       my_train.motor.status = STOP;
@@ -176,27 +193,48 @@ if( start_val==LOW || stop_val==LOW || cng_val==LOW) {
   } // of for() loop
 } // of Task1code
 
+// xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
 
+void blink_all_leds() {
+  my_train.Red_led.set_led_on(); 
+    my_train.Green_led.set_led_on();
+    my_train.Yellow_led.set_led_on();
 
+    wait_millis(1000);
+    my_train.Red_led.set_led_off(); 
+    my_train.Green_led.set_led_off();
+    my_train.Yellow_led.set_led_off();
 
+    //sensors.requestTemperatures(); 
+    //t_sense.init_temp_sensor();
+    //Serial.print(sensors.getTempCByIndex(0)); 
+    //Serial.print(" ... ");
 
+    wait_millis(1000);
+
+} // of blink_all leds
+
+temperature_sensor t_sense;
 
 void setup() {
   Serial.begin(9600);
   //Wire.begin(); // init I2C bus as a master 
-  Serial.println("..starting SETUP....");
+  Serial.print("..starting SETUP.... Core:");
   Serial.println(xPortGetCoreID());
 
-  sensors.begin();
+  //sensors.begin();
+ /*
+  Serial.print("Temperature: ");
   while(true) {
     sensors.requestTemperatures(); 
-    Serial.print("Celsius temperature: ");
-  // "byIndex" incase more ICs on the onewire bus. 0 refers to the first IC on the wire
-  Serial.print(sensors.getTempCByIndex(0)); 
-  delay(250);
-
+    // "byIndex" incase more ICs on the onewire bus. 0 refers to the first IC on the wire
+    Serial.print(sensors.getTempCByIndex(0)); 
+    Serial.print(" ... ");
+    delay(1000);
   } // while loop 
-      
+ */
+
+
   my_train.Red_led.led_pin = red_led_pin;
   my_train.Yellow_led.led_pin = yellow_led_pin;
   my_train.Green_led.led_pin = green_led_pin;
@@ -225,18 +263,15 @@ void setup() {
   wait_millis(1000);
 
   // debug 
-  while( true ) {
-    my_train.Red_led.set_led_on(); 
-    my_train.Green_led.set_led_on();
-    my_train.Yellow_led.set_led_on();
-
-    wait_millis(1000);
-    my_train.Red_led.set_led_off(); 
-    my_train.Green_led.set_led_off();
-    my_train.Yellow_led.set_led_off();
-
-    wait_millis(1000);
-    Serial.println(".. working ... ");
+  for (int i = 0; i < 3; i++) {
+  
+    blink_all_leds();
+  //while( true ) {
+    
+    Serial.println(t_sense.read_temperature());
+    Serial.println(my_train.pcb_temperature.read_temperature());
+    
+    //Serial.println(temperature_sensor.read_temperature()); 
   } // end of debug endless 
 
   //my_train.buzz._buz_pin = buzzer_pin;
@@ -281,7 +316,17 @@ void handle_buttons(); // the function is declared at the bottom after the loop
 
 void loop() {
   //return;
-  
+   int val = digitalRead(button_start_pin); 
+   Serial.print(val);
+   Serial.print(" . ");
+   val = digitalRead(button_stop_pin); 
+   Serial.print(val);
+   Serial.print(" . ");
+   val = digitalRead(button_cng_dir_pin); 
+   Serial.println(val);
+   
+  delay(500);
+  //return;
   
   //Serial.println("   ");
   //Serial.print("  core:  ");
@@ -326,6 +371,8 @@ wait_millis(50);
 
 void handle_buttons() {
 
+// debug 
+//start_pressed = true;
 
     if (start_pressed) {
       //Serial.print("   in START_pressed   ");

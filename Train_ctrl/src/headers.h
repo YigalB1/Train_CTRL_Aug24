@@ -1,9 +1,29 @@
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
 #define RED     1 
 #define YELLOW  2
 #define GREEN   3
-
 #define min_speed 0
 #define max_speed 255
+#define one_wire_bus 32
+
+
+OneWire oneWire(one_wire_bus); // for temperature sensor
+DallasTemperature sensors(&oneWire);
+
+class temperature_sensor {
+  public:
+    
+  void init_temp_sensor() {
+  }; // of init_temp_sensor()
+
+  float read_temperature() {
+    sensors.requestTemperatures(); 
+    return(sensors.getTempCByIndex(0));
+  }; // read_temperature
+} ;  // of temperature_sensor class
+
 
 
 class speed_knob {
@@ -34,10 +54,10 @@ class Led {
       pinMode(led_pin, OUTPUT);
     }
     void set_led_on() {
-        digitalWrite(led_pin,HIGH);
+        digitalWrite(led_pin,LOW);
     }
     void set_led_off() {
-        digitalWrite(led_pin,LOW);
+        digitalWrite(led_pin,HIGH);
     }
 }; // of class led
 
@@ -86,6 +106,7 @@ class Train_ctrl {
     push_button cng_button;
     speed_knob  manual_speed_knob;
     int train_speed = 0; // holds the value of theg speed according to the knob
+    temperature_sensor pcb_temperature;
 
     // for the ESP32 PWM
     const int freq = 5000;
