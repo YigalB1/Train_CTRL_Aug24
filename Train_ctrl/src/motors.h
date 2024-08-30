@@ -23,28 +23,33 @@
     //int _channel;
     int _freq;
     int _resolution;;
-    int _led_channel;
+    int _led_channel0;
+    int _led_channel1;
 
     int status  = STOP;     // 0: stopping  1: Going
     int dir     = GO_FWD; // 1: Going FWD 2: going BCK
 
     //buzzer _buzzer;
-
-    void init(int __en,int __in_1, int __in_2, int __freq, int __res, int __chan) {
-        _en = __en;
+    //void init(int __en,int __in_1, int __in_2, int __freq, int __res, int __chan0, int __chan1) {
+    void init(int __in_1, int __in_2, int __freq, int __res, int __chan0, int __chan1) {
+        // _en = __en; // no need with DRV8871
         _in_1 = __in_1;
         _in_2 = __in_2;
         _freq = __freq;
         _resolution = __res;
-        _led_channel = __chan;
+        _led_channel0 = __chan0;
+        _led_channel1 = __chan1;
         status = STOP;
         dir = GO_FWD;
 
-        pinMode(__in_1, OUTPUT);
-        pinMode(__in_2, OUTPUT);
+        //pinMode(__in_1, OUTPUT); // with DRV8871, better to use both PWMs same time
+        //pinMode(__in_2, OUTPUT); // with DRV8871, better to use both PWMs same time
 
-        ledcSetup(_led_channel, _freq,_resolution);
-        ledcAttachPin(_en, _led_channel);
+        ledcSetup(_led_channel0, _freq,_resolution);
+        ledcSetup(_led_channel1, _freq,_resolution);
+        //ledcAttachPin(_en, _led_channel); no need to en with DRV8871
+        ledcAttachPin(_in_1, _led_channel0);
+        ledcAttachPin(_in_2, _led_channel1);
 
     } // of init()
 
@@ -61,23 +66,27 @@
     } // of motor_test()
 
 void stop() {
-   // i2c_main.digitalWrite(_in_1, LOW);
-   // i2c_main.digitalWrite(_in_2, LOW);
-    digitalWrite(_in_1, LOW); // 
-    digitalWrite(_in_2, LOW); //
-    ledcWrite(_led_channel, 0); 
+    // i2c_main.digitalWrite(_in_1, LOW);
+    // i2c_main.digitalWrite(_in_2, LOW);
+    //digitalWrite(_in_1, LOW);  // no need with DRV8871
+    //digitalWrite(_in_2, LOW);  // no need with DRV8871
+    ledcWrite(_led_channel0, 0);
+    ledcWrite(_led_channel1, 0); 
+    
   } // of stop()
 
   void go_fwd(int _speed) {
-    digitalWrite(_in_1, LOW); // 
-    digitalWrite(_in_2, HIGH); // 
-    ledcWrite(_led_channel, _speed);    
+    //digitalWrite(_in_1, LOW); // no need with DRV8871
+    //digitalWrite(_in_2, HIGH); // no need with DRV8871
+    ledcWrite(_led_channel0, _speed);
+    ledcWrite(_led_channel1, 0);
   } // of go_fwd()
 
   void go_back(int _speed) {
-    digitalWrite(_in_1, HIGH); // 
-    digitalWrite(_in_2, LOW); // 
-    ledcWrite(_led_channel, _speed);
+    //digitalWrite(_in_1, HIGH); // 
+    //digitalWrite(_in_2, LOW); // 
+    ledcWrite(_led_channel0, 0);
+    ledcWrite(_led_channel1, _speed);
   } // of go_back()
 
 /*

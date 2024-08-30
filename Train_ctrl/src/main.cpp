@@ -27,13 +27,13 @@
 #define yellow_led_pin LED2
 #define green_led_pin LED3
 //#define buzzer_pin 25
-#define m1_en_pin 22 // was 22 in layout pcb2, 13 for testing
+//#define m1_en_pin 22 // was 22 in layout pcb2, 13 for testing
 #define m1_in1_pin 23
-#define m1_in2_pin 4
+#define m1_in2_pin 19
 #define button_start_pin   18 //35
 #define button_stop_pin   5 // 36 // was 36, then 17 
 #define button_cng_dir_pin 17 // 34
-#define speed_potsmtr_pin   33 //  26  //39 // was  33
+#define speed_potsmtr_pin  15 //  33 //  26  //39 // was  33
 
 
 
@@ -43,7 +43,8 @@
 
 const int freq = 5000;
 const int resolution = 8;
-const int ledChannel0 = 0; // was 0
+const int ledChannel0 = 0; 
+const int ledChannel1 = 1; 
 
 Train_ctrl my_train;
 //I2C_ctrl my_i2c_bus;
@@ -277,7 +278,8 @@ void setup() {
   //my_train.buzz._buz_pin = buzzer_pin;
   //my_train.buzz.init_buzzer();
 
-  my_train.motor.init(m1_en_pin,m1_in1_pin,m1_in2_pin,freq,resolution,ledChannel0);
+  //my_train.motor.init(m1_en_pin,m1_in1_pin,m1_in2_pin,freq,resolution,ledChannel0,ledChannel1);
+  my_train.motor.init(m1_in1_pin,m1_in2_pin,freq,resolution,ledChannel0,ledChannel1);
   
   // scan I2C - for debug phases
   //my_i2c_bus.I2C_scanner();
@@ -323,8 +325,12 @@ void loop() {
    Serial.print(val);
    Serial.print(" . ");
    val = digitalRead(button_cng_dir_pin); 
-   Serial.println(val);
+   Serial.print(val);
+   Serial.print(" . ");
    
+   Serial.println(my_train.train_speed);
+   
+
   delay(500);
   //return;
   

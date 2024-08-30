@@ -39,7 +39,7 @@ class speed_knob {
     //Serial.print(speed_knob_val);
 
     speed_val = map(speed_knob_val, 0, 4095, min_speed, max_speed);
-    //Serial.print(" speed_val:  ");
+    //Serial.print("    speed_val:  ");
     //Serial.println(speed_val);
 
     return speed_val;
